@@ -9,19 +9,49 @@ const Filter = ( {value, onChange} ) => (
   </div>
 )
 
+const DisplayWeather = ( {city} ) => {
+  const [weatherData, setWeatherData] = useState({})
+  
+  useEffect(() => {
+    const params = {
+      access_key: process.env.REACT_APP_weather_api_key,
+      query: city
+    }
+    axios
+      .get('http://api.weatherstack.com/current', {params})
+      .then(response => {
+        console.log('weather fulfilled', response.data)
+        setWeatherData(response.data)
+      })
+  }, [city])
+
+  if (Object.keys(weatherData).length > 0) {
+    return (
+      <>
+        <h3>Weather in {city}</h3>
+        <p>Temperature: {weatherData.current.temperature}°C</p>
+        <img alt='weather icon' src={weatherData.current.weather_icons[0]}/>
+        <p>Wind: {weatherData.current.wind_speed} kph {weatherData.current.wind_dir}</p>      
+      </>
+    )
+  }
+  return <div></div>
+}
+
 const DisplayCountry = ({country}) => {
   console.log("lang", country.languages);
   Object.entries(country.languages).map(([lang, language]) => console.log(lang, language))
   return (
     <div>
       <h1>{country.name.common} (a.k.a. {country.name.official})</h1>
-      <div>Capital: {country.capital}</div>
+      <div>Capital: {country.capital[0]}</div>
       <div>Area: {country.area}m<sup>2</sup></div>
       <h3>Languages:</h3>
       <ul>
         {Object.entries(country.languages).map(([langCode, language]) => <li key={langCode}>{language}</li>)}
       </ul>
       <img src={country.flags.svg} width="200" alt="country flag" />
+      <DisplayWeather city={country.capital[0]} />
     </div>
   )
 }
