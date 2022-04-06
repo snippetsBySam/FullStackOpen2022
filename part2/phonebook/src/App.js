@@ -30,8 +30,8 @@ const PersonForm = (props) => (
   </form>
 )
 
-const Persons = ({ persons }) => (
-  <div>{persons.map(person => <div key={person.name}>{person.name} {person.number}</div>)}</div>
+const Persons = ({ persons, remove }) => (
+  <div>{persons.map(person => <div key={person.name}>{person.name} {person.number} <button onClick={() => remove(person.id)}>remove</button> </div>)}</div>
 )
 
 const App = () => {
@@ -71,6 +71,25 @@ const App = () => {
     }
   }
 
+  const removePerson = (id) => {
+    const personToRemove = persons.find(person => person.id === id)
+    // Check if person to remove exists
+    if (Object.keys(personToRemove).length > 0) {
+      // confirm person to remove
+      if (window.confirm(`Delete ${personToRemove.name}?`)) {
+        const updatedPersons = persons.filter(person => person.id !== id)
+        console.log('remove', personToRemove);
+        phoneservice
+          .remove(id)
+          .then(response => {
+            setPersons(updatedPersons)
+            console.log(response)
+          })
+          .catch(error => console.log(error))
+      }
+    }
+  }
+
   const handleNameChange = (event) => {
     setNewName(event.target.value)
   }
@@ -98,7 +117,7 @@ const App = () => {
         onSubmit={addPerson}
       />
       <h3>Numbers</h3>
-      <Persons persons={personsToShow}/>
+      <Persons persons={personsToShow} remove={removePerson}/>
     </div>
   )
 }
