@@ -31,7 +31,7 @@ const PersonForm = (props) => (
 )
 
 const Persons = ({ persons, remove }) => (
-  <div>{persons.map(person => <div key={person.name}>{person.name} {person.number} <button onClick={() => remove(person.id)}>remove</button> </div>)}</div>
+  <div>{persons.map(person => <div key={person.name}>{person.name} {person.number} <button onClick={() => remove(person.id)}>delete</button> </div>)}</div>
 )
 
 const App = () => {
@@ -51,23 +51,36 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    if ((persons.filter(person => person.name.toLowerCase() === newName.toLowerCase()).length === 0 )) {
-      const personObject = {
-        name: newName,
-        number: newNumber
-      }
 
+    const newPerson = {
+      name: newName,
+      number: newNumber
+    }
+    // search for person being added in persons list
+    const result = persons.find(person => person.name.toLowerCase() === newName.toLowerCase())
+    // ask to update if theres was a result
+    if (result && Object.keys(result).length > 0) {
+      if(window.confirm(`${result.name} is already added to phonebook, replace old number with new one?`)) {
+        phoneservice
+          .update(result.id, newPerson)
+          .then(returnedPerson => {
+            setPersons(persons.map(person => person.id === result.id ? returnedPerson : person))
+            setNewName('')
+            setNewNumber('')
+          })
+          .catch(error => console.log(error))
+      }
+    }
+    // if person doesn't exist, and a name was provided
+    else if (newPerson.name) {
       phoneservice
-        .create(personObject)
+        .create(newPerson)
         .then(returnedPerson => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNumber('')
         })
         .catch(error => console.log(error))
-    }
-    else {
-      alert(`${newName} is already added to phonebook`)
     }
   }
 
@@ -78,12 +91,12 @@ const App = () => {
       // confirm person to remove
       if (window.confirm(`Delete ${personToRemove.name}?`)) {
         const updatedPersons = persons.filter(person => person.id !== id)
-        console.log('remove', personToRemove);
+        //console.log('remove', personToRemove);
         phoneservice
           .remove(id)
           .then(response => {
             setPersons(updatedPersons)
-            console.log(response)
+            //console.log(response)
           })
           .catch(error => console.log(error))
       }
