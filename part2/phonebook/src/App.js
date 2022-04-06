@@ -41,7 +41,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [personFilter, setPersonFilter] = useState('')
-  const [message, setMessage] = useState({})
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
     phoneservice
@@ -78,7 +78,18 @@ const App = () => {
               setMessage(null)
             }, 5000)
           })
-          .catch(error => console.log(error))
+          .catch(error => {
+            // Display error message
+            setMessage({
+              text: `Information of ${newPerson.name} has already been removed from server`,
+              status: 'error'
+            })
+            setTimeout(() => {
+              setMessage(null)
+            }, 5000)
+            // remove missing person from front end
+            setPersons(persons.filter(person => person.id !== result.id))
+          })
       }
     }
     // if person doesn't exist, and a name was provided
@@ -122,7 +133,18 @@ const App = () => {
             }, 5000)
             //console.log(response)
           })
-          .catch(error => console.log(error))
+          .catch(error => {
+            // Display error message
+            setMessage({
+              text: `Information of ${personToRemove.name} has already been removed from server`,
+              status: 'error'
+            })
+            setTimeout(() => {
+              setMessage(null)
+            }, 5000)
+            // remove missing person from front end
+            setPersons(persons.filter(person => person.id !== personToRemove.id))
+          })
       }
     }
   }
